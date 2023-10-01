@@ -1,0 +1,97 @@
+import java.util.ArrayList;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.io.PrintWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+
+public class Order {
+    private ArrayList<Item> ordereditemList;
+    private double totalPrice;
+    
+    
+    public Order() {
+        ordereditemList = new ArrayList<Item>();
+        totalPrice = 0.0;
+     
+    }
+    
+    public void addItem(Item item) {
+        ordereditemList.add(item);
+        totalPrice += item.getItemPrice();
+       
+    }
+    
+    public void printReceipt() {
+        System.out.println("Order");
+        System.out.println("--------------------------------------------------");
+    
+        for (Item item : ordereditemList) {
+            System.out.printf("%-30sRM %.2f\n", item.getItemDescription(), item.getItemPrice());
+        }
+        
+        
+        for (Item i : ordereditemList) {
+            if (i.getItemNumber() == 8) {
+                System.out.println("* free 1 soft drink and 1 coffee");
+            }
+            if (i.getItemNumber() == 7) {
+                System.out.println("* free 1 soft drink");
+            }
+            if (i.getItemNumber() == 6) {
+                System.out.println("* free 1 coffee");
+            }
+        }
+      
+        
+        System.out.println("---------------------------------------------------");
+        System.out.printf("%40sRM %.2f\n", " ", getTotalPrice());
+        System.out.println("---------------------------------------------------");
+    }
+    
+    public void saveOrdersToFile(){
+        LocalDate date = LocalDate.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+        String fileName = formatter.format(date) + ".txt";
+        try{
+            FileWriter fw = new FileWriter(fileName);
+            PrintWriter pw = new PrintWriter(fw);
+            
+            pw.println("Order");
+            pw.println("--------------------------------------------------");
+            
+            for (Item item : ordereditemList) {
+                pw.printf("%-30sRM %.2f\n", item.getItemDescription(), item.getItemPrice());
+            }
+            
+            for (Item i : ordereditemList){
+            if (i.getItemNumber() == 8) {
+                pw.println("* free 1 soft drink and 1 coffee");
+                }
+            if (i.getItemNumber() == 7) {
+                pw.println("* free 1 soft drink");
+                }
+            if (i.getItemNumber() == 6) {
+                pw.println("* free 1 coffee");
+                }
+            }
+           
+
+            pw.println("---------------------------------------------------");
+            pw.printf("%40sRM %.2f\n", " ", getTotalPrice());
+            pw.println("---------------------------------------------------");
+            pw.close();
+            System.out.println("Order saved to file " + fileName);
+            
+        }catch(IOException e){
+            System.out.println("Error saving orders to file");
+        }
+        
+    
+    }
+        
+        
+    public double getTotalPrice() {
+        return totalPrice;
+    }
+}
