@@ -1,0 +1,133 @@
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Scanner;
+import java.io.PrintWriter;
+import java.io.File;
+
+
+public class Menu {
+    private ArrayList<Item> itemList;
+    public Menu() {
+        itemList = new ArrayList<Item>();
+        loadItems();
+    }
+    
+    private void loadItems() {
+        //In summary, this code reads data from a file containing information about menu items, creates Item objects from that data,
+        //and adds them to an ArrayList called itemList.
+        try {
+            BufferedReader br = new BufferedReader(new FileReader("item.txt"));
+            String line;
+            while ((line = br.readLine()) != null) {
+                String[] parts = line.split(",");
+                int itemNumber = Integer.parseInt(parts[0]);
+                String itemDescription = parts[1];
+                double itemPrice = Double.parseDouble(parts[2]);
+                Item item = new Item(itemNumber, itemDescription, itemPrice);
+                itemList.add(item);
+            }
+            br.close();
+        } catch (IOException e) {
+            System.out.println("Error loading item list.");
+        }
+    }
+    
+    private void displayOrderMenu() {
+        System.out.println("Lite Lunch Lounge Order Menu\n");
+        for (Item item : itemList) {
+            System.out.printf("%d) %-25s RM%.2f\n", item.getItemNumber(), item.getItemDescription(), item.getItemPrice());
+        }
+    }
+    
+    public void run() {
+        Scanner scanner = new Scanner(System.in);
+        char choice;
+        do {
+            System.out.println("Lite Lunch Main Menu\n1) Order Menu\n2) Add New Item\n3) Exit System");
+            System.out.print("Please enter your option: ");
+            choice = scanner.nextLine().charAt(0);
+            switch (choice) {
+                case '1':
+                    Order order = new Order();
+                    do {
+                        displayOrderMenu();
+                        System.out.print("Please enter your option: ");
+                        int itemNumber = scanner.nextInt();
+                        scanner.nextLine();
+                        
+                        Item item = null;
+                        for (Item i : itemList) {
+                            if (i.getItemNumber() == itemNumber) { 
+                                item = i;
+                                break;
+                            }   
+                        }
+                        if (item != null) {
+                            order.addItem(item);
+                            System.out.printf("You have added %s to your order.\n", item.getItemDescription());
+                        } else {
+                            System.out.println("Invalid item number. Please try again.");
+                        }
+                        System.out.print("Do you want to add more items to your order? (Y/N) ");
+                    } while (scanner.nextLine().equalsIgnoreCase("Y"));
+                    System.out.println();
+                    order.printReceipt();
+                    order.saveOrdersToFile();
+                    System.out.println("Thank you for your order!");
+                    System.out.println();
+                    break;
+                case '2':
+                    try {
+                        Scanner s = new Scanner(new File("item.txt"));
+                        int lastItemNumber = 0;
+                        while(s.hasNextLine()){
+                            String line = s.nextLine();
+                            String[] parts = line.split(",");
+                            int itemNumber = Integer.parseInt(parts[0]);
+                            if (itemNumber > lastItemNumber){
+                                lastItemNumber = itemNumber;
+                            }
+                        }
+                        s.close();
+                        
+                        // Generate the new item number and prompt for item details
+                        int newItemNumber = lastItemNumber + 1;
+                        System.out.print("Please enter the new item description: ");
+                        String newItemDescription = scanner.nextLine();
+                        System.out.print("Please enter the new item price: ");
+                        double newItemPrice = scanner.nextDouble();
+                        scanner.nextLine();
+                        
+                         // Create the new item and add it to the item list and file
+                        Item newItem = new Item(newItemNumber, newItemDescription, newItemPrice);
+                        itemList.add(newItem);
+                        FileWriter fw = new FileWriter("item.txt", true);
+                        PrintWriter pw = new PrintWriter(fw);
+                        
+                        pw.println();
+                        pw.write(String.format("%d, %s, %.2f\n", newItemNumber, newItemDescription, newItemPrice));
+                        pw.close();
+                        System.out.println("New item has been added successfully.");
+                    } catch (IOException e) {
+                        System.out.println("Error adding new item.");
+                    }
+                    break;  
+                case '3':
+                    System.out.println("Thank you for using Lite Lunch Lounge system.");
+                    break;
+                default:
+                    System.out.println("Invalid option. Please try again.");
+                    break;
+            }
+        } while (choice != '3');
+        scanner.close();
+    }
+    
+    public static void main(String[] args) {
+        Menu menu = new Menu();
+        menu.run();
+    }
+}
